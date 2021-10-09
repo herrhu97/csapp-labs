@@ -1,7 +1,7 @@
 # CSAPP
 CSAPP学习资料汇总（包含个人实验代码，目前暂未完工）
 
-![alt](http://csapp.cs.cmu.edu/3e/images/csapp3e-cover.jpg)
+![image](http://csapp.cs.cmu.edu/3e/images/csapp3e-cover.jpg)
 
 ## 课程资料
 
@@ -39,5 +39,7 @@ CSAPP学习资料汇总（包含个人实验代码，目前暂未完工）
 ~~~shell
 cd download-slides && python download.py
 ~~~
+
+![image](https://user-images.githubusercontent.com/74177355/136653806-4b605685-f315-4b9c-a676-4f8fce50d171.png)
 
 
