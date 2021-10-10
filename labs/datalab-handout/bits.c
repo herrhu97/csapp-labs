@@ -132,7 +132,6 @@ NOTES:
  *      the correct answers.
  */
 
-
 #endif
 //1
 /* 
@@ -142,8 +141,10 @@ NOTES:
  *   Max ops: 14
  *   Rating: 1
  */
-int bitXor(int x, int y) {
-  return 2;
+int bitXor(int x, int y)
+{
+  /* 德摩根定律的使用 */
+  return ~(~x & ~y) & ~(x & y);
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -151,10 +152,10 @@ int bitXor(int x, int y) {
  *   Max ops: 4
  *   Rating: 1
  */
-int tmin(void) {
-
-  return 2;
-
+int tmin(void)
+{
+  /* 直接左移即可 */
+  return 1 << 31;
 }
 //2
 /*
@@ -164,19 +165,30 @@ int tmin(void) {
  *   Max ops: 10
  *   Rating: 1
  */
-int isTmax(int x) {
-  return 2;
+int isTmax(int x)
+{
+  /* Tmax满足：~x = x + 1,同时-1也满足该式 */
+  /* 通过自己与自己异或为0来判断是否相等 */
+  return !((x + 1) ^ ~x) & !!(x + 1);
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
  *   where bits are numbered from 0 (least significant) to 31 (most significant)
  *   Examples allOddBits(0xFFFFFFFD) = 0, allOddBits(0xAAAAAAAA) = 1
+ *   0xFFFFFFFD 1101 0xAAAAAAAA 1010
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 12
  *   Rating: 2
  */
-int allOddBits(int x) {
-  return 2;
+int allOddBits(int x)
+{
+  /* 性质：x & 0xAAAAAAAA == 0xAAAAAAAA 
+  等号的操作可以直接利用a == b 等价于 !(a ^b)
+  */
+  int a = 0xAA;
+  int b = a << 8 | a;
+  int c = b << 16 | b;
+  return !((x & c) ^ c);
 }
 /* 
  * negate - return -x 
@@ -185,8 +197,10 @@ int allOddBits(int x) {
  *   Max ops: 5
  *   Rating: 2
  */
-int negate(int x) {
-  return 2;
+int negate(int x)
+{
+  /* 性质：A + ~A = -1 和 A + neg A =0 利用这两个式子我们可以得到 neg A = ~A + 1 */
+  return ~x + 1;
 }
 //3
 /* 
@@ -198,9 +212,23 @@ int negate(int x) {
  *   Max ops: 15
  *   Rating: 3
  */
-int isAsciiDigit(int x) {
-  return 2;
+int isAsciiDigit(int x)
+{
+  /* 0x30 00110000 0x39 00111001 
+     a用来判断前四位是否为0011
+     b为后四位，用来判断是否为大于1小于9
+     c为值-10
+     e为0x80000000
+     用b + c的值是否为负数判断是否在0-9内，同时与e做与运算判断是否为负数
+  */
+  int a = !(x >> 4 ^ 0x3);
+  int b = x & 0xF;
+  int c = ~0xA + 1;
+  int e = 1 << 31;
+  int d = !!((b + c) & (e));
+  return a & d;
 }
+
 /* 
  * conditional - same as x ? y : z 
  *   Example: conditional(2,4,5) = 4
@@ -208,8 +236,14 @@ int isAsciiDigit(int x) {
  *   Max ops: 16
  *   Rating: 3
  */
-int conditional(int x, int y, int z) {
-  return 2;
+int conditional(int x, int y, int z)
+{
+  /* 需要一个0xFFFFFFFF来完成 y + z + -y + 0或者 y + z + 0 + -z的拼凑*/
+  int a = !!(x^0x0); // if x = 0, a = 0;        else a = 1
+  int b = ~a + 1;    // if x = 0, a = 0, b = 0; else b = -1
+  int c = ~(y & ~b) + 1; // if x = 0, a = 0, b = 0, c = -y; else c = 0;
+  int d = ~(z & b) + 1;  // if x = 0, a = 0, b = 0, d = 0;  else d = -z
+  return y + z + c + d;
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -218,8 +252,17 @@ int conditional(int x, int y, int z) {
  *   Max ops: 24
  *   Rating: 3
  */
-int isLessOrEqual(int x, int y) {
-  return 2;
+int isLessOrEqual(int x, int y)
+{
+  int a = x >> 31 & 0x1;
+  int b = y >> 31 & 0x1;
+  int c1 = a & ~b; // 1: x -, y +; else 0
+  int c2 = ~a & b; // 1: x +, y -; else 0
+
+  int negX = ~x + 1;
+  int res = y + negX; // y - x
+  int flag = res >> 31; //如果flag 和 c2 不同则说明了溢出了
+  return c1 | (!c2 & !flag);
 }
 //4
 /* 
@@ -230,8 +273,10 @@ int isLessOrEqual(int x, int y) {
  *   Max ops: 12
  *   Rating: 4 
  */
-int logicalNeg(int x) {
-  return 2;
+int logicalNeg(int x)
+{
+  // 如此巧妙，实在想不到
+  return ((x | (~x + 1)) >> 31) + 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -245,7 +290,8 @@ int logicalNeg(int x) {
  *  Max ops: 90
  *  Rating: 4
  */
-int howManyBits(int x) {
+int howManyBits(int x)
+{
   return 0;
 }
 //float
@@ -260,7 +306,8 @@ int howManyBits(int x) {
  *   Max ops: 30
  *   Rating: 4
  */
-unsigned floatScale2(unsigned uf) {
+unsigned floatScale2(unsigned uf)
+{
   return 2;
 }
 /* 
@@ -275,7 +322,8 @@ unsigned floatScale2(unsigned uf) {
  *   Max ops: 30
  *   Rating: 4
  */
-int floatFloat2Int(unsigned uf) {
+int floatFloat2Int(unsigned uf)
+{
   return 2;
 }
 /* 
@@ -291,6 +339,7 @@ int floatFloat2Int(unsigned uf) {
  *   Max ops: 30 
  *   Rating: 4
  */
-unsigned floatPower2(int x) {
-    return 2;
+unsigned floatPower2(int x)
+{
+  return 2;
 }
