@@ -1,5 +1,4 @@
-# CSAPP
-CSAPP学习资料汇总（包含个人实验代码，目前暂未完工）
+# CSAPP-Labs
 
 ![image](http://csapp.cs.cmu.edu/3e/images/csapp3e-cover.jpg)
 
